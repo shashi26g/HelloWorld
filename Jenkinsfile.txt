@@ -1,26 +1,28 @@
 pipeline {
     agent any
-    tools{
-        maven 'local_maven'
-    }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'mvn clean package'
-            }
-            post{
-                success{
-                    echo "Archiving the Artifacts"
-                    archiveArtifacts artifacts: '**/target/*.war'
-                }
+            tools{
+                maven 'local_maven'
+                 }
+        stages {
+            stage('Checkout') {
+                steps {
+                        git branch: 'master', credentialsId: 'github', url: 'https://github.com/Bhargavi-lakamsani/hello-world-war.git'
+                    }
+                            }
+            stage('Build') {
+                steps {
+                    sh 'mvn clean package'
+                    }
+                            }
+            stage('Push') {
+                steps {
+                    echo 'This is Push Stage'
+                        }
+                        }
+            stage('Deploy') {
+                steps {
+                    sh 'rsync /var/lib/jenkins/workspace/tomcat/target/*.war ubuntu@65.2.33.55:/opt/tomcat/webapps/'
+                    }
+                            }
             }
         }
-stage ('Deploy to tomcat') {
-            steps{
-                sshagent(['tomcat']) {
-                  sh "scp -o stricthostkeychecking=no webapp/target/webapp.war ec2-user@3.111.214.108:/opt/tomcat/apache-tomcat-9.0.87/webapps"
-}
-            }
-        }
-    }
-}
