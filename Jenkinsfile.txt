@@ -21,7 +21,7 @@ pipeline {
                         }
             stage('Deploy') {
                 steps {
-                    sh 'rsync /var/lib/jenkins/workspace/tomcat/target/*.war ec2-user@3.111.214.108:/opt/tomcat/apache-tomcat-9.0.87/webapps/'
+                    sh 'rsync /var/lib/jenkins/workspace//deploy_tomcat/target/*.war ec2-user@3.111.214.108:/opt/tomcat/apache-tomcat-9.0.87/webapps/'
                     }
                             }
             }
