@@ -21,13 +21,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                script {
-                    try {
-                        sshagent(['tomcat']) {
-                            sh 'rsync /var/lib/jenkins/workspace/deploy_tomcat/target/*.war ec2-user@13.235.2.106:/opt/tomcat/apache-tomcat-9.0.87/webapps/'
-                        }
-                    }
-                }
+                deploy adapters: [tomcat9(credentialsId: 'Tomcat_id', path: '', url: 'http://13.235.2.106:8080')], contextPath: '/opt/tomcat/apache-tomcat-9.0.87/webapps/', war: '/var/lib/jenkins/workspace/deploy_tomcat/target/*.war'
             }
         }
     }
