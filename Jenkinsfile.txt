@@ -26,9 +26,6 @@ pipeline {
                         sshagent(['tomcat']) {
                             sh 'rsync /var/lib/jenkins/workspace/deploy_tomcat/target/*.war ec2-user@13.235.2.106:/opt/tomcat/apache-tomcat-9.0.87/webapps/'
                         }
-                    } catch (Exception e) {
-                        echo "Error deploying the artifact: ${e.message}"
-                        currentBuild.result = 'FAILURE'
                     }
                 }
             }
