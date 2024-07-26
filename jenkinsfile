@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    tools {
+        maven 'maven'
+    }
+    environment {
+        TOMCAT_USER = 'ec2-user'
+        TOMCAT_HOST = '13.201.47.197'
+        TOMCAT_PATH = '/opt/apache-tomcat-9.0.91/webapps/'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', credentialsId: 'github', url: 'https://github.com/shashi26g/HelloWorld.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+            post {
+                success {
+                    echo "Archiving the Artifacts"
+                    archiveArtifacts artifacts: '**/target/*.war'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sshagent(['tomcat']) {
+                    sh "rsync -avz --delete target/*.war ${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_PATH}"
+                }
+            }
+        }
+    }
+}
