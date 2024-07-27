@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven'
+    }
+
+    environment {
+        TOMCAT_USER = 'ec2-user'
+        TOMCAT_HOST = '13.201.47.197'
+        TOMCAT_PATH = '/opt/apache-tomcat-9.0.91/webapps/'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', credentialsId: 'github', url: 'https://github.com/shashi26g/HelloWorld.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+            post {
+                success {
+                    echo "Archiving the Artifacts"
+                    archiveArtifacts artifacts: '**/target/*.war'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sshagent(['tomcat']) {
+                    sh "rsync -avz -e 'ssh -o StrictHostKeyChecking=no' --delete target/*.war ${TOMCAT_USER}@${TOMCAT_HOST}:${TOMCAT_PATH}"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            emailext(
+                subject: "Jenkins Job '${env.JOB_NAME}' - Build #${env.BUILD_NUMBER} - Success",
+                body: """
+                <p>Job '${env.JOB_NAME}' (<a href='${env.JOB_DISPLAY_URL}'>${env.JOB_DISPLAY_URL}</a>) is successful</p>
+                <p>Build Number: ${env.BUILD_NUMBER}</p>
+                <p>Build URL: <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+            )
+        }
+        failure {
+            emailext(
+                subject: "Jenkins Job '${env.JOB_NAME}' - Build #${env.BUILD_NUMBER} - Failure",
+                body: """
+                <p>Job '${env.JOB_NAME}' (<a href='${env.JOB_DISPLAY_URL}'>${env.JOB_DISPLAY_URL}</a>) has failed</p>
+                <p>Build Number: ${env.BUILD_NUMBER}</p>
+                <p>Build URL: <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+            )
+        }
+    }
+}
