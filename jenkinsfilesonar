@@ -49,9 +49,16 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('sonar') {
-                        sh 'mvn sonar:sonar -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY}'
+                    withCredentials([string(credentialsId: 'sonar', variable: 'SONARQUBE_TOKEN')]) {
+                        withSonarQubeEnv('sonar') {
+                            sh 'mvn sonar:sonar -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} -Dsonar.login=${SONARQUBE_TOKEN}'
+                        }
                     }
+                }
+            }
+            post {
+                failure {
+                    echo "SonarQube analysis failed. Please check SonarQube permissions and configuration."
                 }
             }
         }
