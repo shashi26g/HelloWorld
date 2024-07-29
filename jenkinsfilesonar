@@ -10,7 +10,7 @@ pipeline {
         ARTIFACTORY_URL = 'http://18.60.157.183:8081/artifactory'
         ARTIFACTORY_REPO = 'libs-release-local'
         SONARQUBE_URL = 'http://18.60.157.183:9000'
-        SONARQUBE_PROJECT_KEY = 'sqp_38164e737904d57e571fc617f07f4269179c155c'
+        SONARQUBE_PROJECT_KEY = 'sqp_fd31fb25b4d7f3ee40bfe001adfc29e84a88e0c7'
     }
     stages {
         stage('Checkout') {
